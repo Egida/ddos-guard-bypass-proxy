@@ -29,7 +29,7 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	req, err := http.NewRequestWithContext(ctx, "GET", "https://ifconfig.me/", nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", "https://ipinfo.io/ip", nil)
 	if err != nil {
 		log.Panicln(err)
 	}
