@@ -1,6 +1,2 @@
-github.com/SkYNewZ/go-flaresolverr v0.0.0-20220630223104-f0ea29e7cbd3 h1:RlcoqWVrPqceVlH9DDf7qieCfF4WHxKyDkQ301OsbPo=
-github.com/SkYNewZ/go-flaresolverr v0.0.0-20220630223104-f0ea29e7cbd3/go.mod h1:q9Eo5OxkYtDCJKmT804dAAMmFJOwkF9nck1oITElT48=
-github.com/google/uuid v1.3.0 h1:t6JiXgmwXMjEs8VusXIJk2BXHsn+wx8BZdTaoZ5fu7I=
-github.com/google/uuid v1.3.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
 github.com/hashicorp/golang-lru/v2 v2.0.1 h1:5pv5N1lT1fjLg2VQ5KWc7kmucp2x/kvFOnxuVTqZ6x4=
 github.com/hashicorp/golang-lru/v2 v2.0.1/go.mod h1:QeFd9opnmA6QUJc5vARoKUSoFhyfM2/ZepoAG6RGpeM=

@@ -3,16 +3,13 @@ package worker
 import (
 	"context"
 	"errors"
-	"io"
 	"log"
 	"net/http"
-	"strings"
 	"sync"
 
-	"github.com/SkYNewZ/go-flaresolverr"
+	"github.com/birros/ddos-guard-bypass-proxy/pkg/flaresolverr"
 	"github.com/birros/ddos-guard-bypass-proxy/pkg/request"
 	"github.com/birros/ddos-guard-bypass-proxy/pkg/response"
-	"github.com/google/uuid"
 	lru "github.com/hashicorp/golang-lru/v2"
 )
 
@@ -27,6 +24,7 @@ type Worker struct {
 	once    sync.Once
 	ch      chan payload
 	c       *config
+	session *flaresolverr.Session
 }
 
 func New(
@@ -40,6 +38,7 @@ func New(
 		pending: sync.Map{},
 		ch:      make(chan payload),
 		c:       c,
+		session: flaresolverr.New(c.flareSolverrUrl),
 	}
 }
 
@@ -61,59 +60,22 @@ func (w *Worker) process(payload payload) {
 		w.pending.Delete(payload.Url)
 	}()
 
-	ctx, cancel := context.WithTimeout(context.Background(), w.c.queryTimeout)
-	defer cancel()
-
-	var res *flaresolverr.Response
-	client := flaresolverr.New(w.c.flareSolverrUrl, w.c.queryTimeout, nil)
-	if payload.RequestDTO.Method == http.MethodGet {
-		var err error
-		res, err = client.Get(ctx, payload.RequestDTO.URL, uuid.Nil)
-		if err != nil {
-			log.Println(payload.Url, err)
-			return
-		}
-	} else if payload.RequestDTO.Method == http.MethodPost {
-		var err error
-		res, err = client.Post(ctx, payload.RequestDTO.URL, uuid.Nil, payload.RequestDTO.Body)
-		if err != nil {
-			log.Println(payload.Url, err)
-			return
-		}
-	} else {
+	var res *http.Response
+	if payload.RequestDTO.Method != http.MethodGet {
 		log.Println(payload.Url, http.ErrNotSupported)
 		return
 	}
 
-	header := map[string][]string{
-		"Status":                 {res.Solution.Headers.Status},
-		"Date":                   {res.Solution.Headers.Date},
-		"Content-Type":           {res.Solution.Headers.ContentType},
-		"Expires":                {res.Solution.Headers.Expires},
-		"Cache-Control":          {res.Solution.Headers.CacheControl},
-		"Pragma":                 {res.Solution.Headers.Pragma},
-		"X-Frame-Options":        {res.Solution.Headers.XFrameOptions},
-		"X-Content-Type-Options": {res.Solution.Headers.XContentTypeOptions},
-		"Cf-Cache-Status":        {res.Solution.Headers.CfCacheStatus},
-		"Expect-Ct":              {res.Solution.Headers.ExpectCt},
-		"Report-To":              {res.Solution.Headers.ReportTo},
-		"Nel":                    {res.Solution.Headers.Nel},
-		"Server":                 {res.Solution.Headers.Server},
-		"Cf-Ray":                 {res.Solution.Headers.CfRay},
-		"Content-Encoding":       {res.Solution.Headers.ContentEncoding},
-		"Alt-Svc":                {res.Solution.Headers.AltSvc},
+	ctx, cancel := context.WithTimeout(context.Background(), w.c.queryTimeout)
+	defer cancel()
+
+	res, err := w.session.Get(ctx, payload.RequestDTO.URL)
+	if err != nil {
+		log.Println(payload.Url, err)
+		return
 	}
 
-	body := io.NopCloser(strings.NewReader(res.Solution.Response))
-
-	r := &http.Response{
-		StatusCode: res.Solution.Status,
-		Status:     res.Status,
-		Header:     header,
-		Body:       body,
-	}
-
-	resDTO, err := response.NewHTTPResponseDTO(r)
+	resDTO, err := response.NewHTTPResponseDTO(res)
 	if err != nil {
 		log.Println(payload.Url, http.ErrNotSupported)
 		return
@@ -148,7 +110,7 @@ func (w *Worker) Add(req *http.Request) {
 func (w *Worker) Get(req *http.Request) (*http.Response, error) {
 	resDTO, ok := w.cache.Get(req.URL.String())
 	if !ok {
-		return nil, errors.New("not cached")
+		return nil, errors.New("key not found")
 	}
 
 	return response.NewHTTPResponseFromDTO(resDTO)
