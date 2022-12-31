@@ -5,23 +5,12 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"net/url"
 	"os"
 
 	"github.com/birros/ddos-guard-bypass-proxy/pkg/client"
 )
 
-const proxyUrlStr = "http://127.0.0.1:8080/"
-
-var proxyUrl *url.URL
-
-func init() {
-	var err error
-	proxyUrl, err = url.Parse(proxyUrlStr)
-	if err != nil {
-		log.Panicln(err)
-	}
-}
+const proxyUrl = "http://127.0.0.1:8192/"
 
 func main() {
 	log.SetFlags(log.Lshortfile | log.Ltime)

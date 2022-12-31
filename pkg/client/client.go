@@ -6,14 +6,13 @@ import (
 	"errors"
 	"io"
 	"net/http"
-	"net/url"
 
 	"github.com/birros/ddos-guard-bypass-proxy/pkg/request"
 	"github.com/birros/ddos-guard-bypass-proxy/pkg/response"
 )
 
 type Client struct {
-	URL *url.URL
+	URL string
 }
 
 func (c *Client) Do(req *http.Request) (*http.Response, error) {
@@ -30,7 +29,7 @@ func (c *Client) Do(req *http.Request) (*http.Response, error) {
 	reqProxy, err := http.NewRequestWithContext(
 		req.Context(),
 		"POST",
-		c.URL.String(),
+		c.URL,
 		bytes.NewReader(reqData),
 	)
 	if err != nil {
