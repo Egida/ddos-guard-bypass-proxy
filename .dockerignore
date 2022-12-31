@@ -1,0 +1,5 @@
+.dockerignore
+.tool-versions
+Dockerfile
+LICENSE.txt
+README.md
