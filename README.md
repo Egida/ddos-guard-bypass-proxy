@@ -1,5 +1,5 @@
 ```shell
-$ docker run -d
+$ docker run -d \
     --name=flaresolverr \
     -p 8191:8191 \
     -e LOG_LEVEL=info \
