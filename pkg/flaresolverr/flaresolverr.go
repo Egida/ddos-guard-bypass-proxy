@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -149,7 +150,12 @@ func parseListSessionsResponse(res *http.Response) ([]string, error) {
 	}
 
 	if payload.Status != "ok" {
-		return nil, ErrFlareSolverrResponseNotOK
+		err := fmt.Errorf(
+			"%w: %s",
+			ErrFlareSolverrResponseNotOK,
+			payload.Message,
+		)
+		return nil, err
 	}
 
 	sessions := payload.Sessions
@@ -179,7 +185,12 @@ func parseCreateSessionResponse(res *http.Response) (string, error) {
 	}
 
 	if payload.Status != "ok" {
-		return "", ErrFlareSolverrResponseNotOK
+		err := fmt.Errorf(
+			"%w: %s",
+			ErrFlareSolverrResponseNotOK,
+			payload.Message,
+		)
+		return "", err
 	}
 
 	session := payload.Session
@@ -208,7 +219,12 @@ func parseDestroySessionResponse(res *http.Response) error {
 	}
 
 	if payload.Status != "ok" {
-		return ErrFlareSolverrResponseNotOK
+		err := fmt.Errorf(
+			"%w: %s",
+			ErrFlareSolverrResponseNotOK,
+			payload.Message,
+		)
+		return err
 	}
 
 	return nil
@@ -243,7 +259,12 @@ func parseGetResponse(res *http.Response) (*http.Response, error) {
 	}
 
 	if payload.Status != "ok" {
-		return nil, ErrFlareSolverrResponseNotOK
+		err := fmt.Errorf(
+			"%w: %s",
+			ErrFlareSolverrResponseNotOK,
+			payload.Message,
+		)
+		return nil, err
 	}
 
 	header := map[string][]string{}
