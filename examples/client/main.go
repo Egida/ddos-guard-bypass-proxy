@@ -10,8 +10,6 @@ import (
 	"github.com/birros/ddos-guard-bypass-proxy/pkg/client"
 )
 
-const proxyUrl = "http://127.0.0.1:8192/"
-
 func main() {
 	log.SetFlags(log.Lshortfile | log.Ltime)
 
@@ -23,9 +21,7 @@ func main() {
 		log.Panicln(err)
 	}
 
-	client := client.Client{
-		URL: proxyUrl,
-	}
+	client := client.NewClient()
 	res, err := client.Do(req)
 	if err != nil {
 		log.Panicln(err)

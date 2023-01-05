@@ -13,10 +13,10 @@ type Session struct {
 	lock *Lock
 }
 
-func New(url string) *Session {
+func NewSession(url string) *Session {
 	s := &Session{
 		c: Client{
-			Url: url,
+			url: url,
 		},
 	}
 
@@ -32,13 +32,13 @@ func (s *Session) Get(ctx context.Context, url string) (*http.Response, error) {
 	}
 	defer s.lock.UnLock()
 
-	sessionID, err := s.sessionID(ctx, s.c.SessionID)
+	sessionID, err := s.sessionID(ctx, s.c.SessionID())
 	if err != nil {
 		log.Println(err)
 		return nil, err
 	}
 
-	s.c.SessionID = sessionID
+	s.c.SetSessionID(sessionID)
 
 	res, err := s.c.Get(ctx, url)
 	if err != nil {
@@ -82,12 +82,12 @@ func (s *Session) destroySession() {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	err := s.c.DestroySession(ctx, s.c.SessionID)
+	err := s.c.DestroySession(ctx, s.c.SessionID())
 	if err != nil {
 		log.Println(err)
 	}
 
-	s.c.SessionID = ""
+	s.c.SetSessionID("")
 }
 
 func contains[K comparable](s []K, i K) bool {

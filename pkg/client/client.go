@@ -9,13 +9,26 @@ import (
 
 	"github.com/birros/ddos-guard-bypass-proxy/pkg/request"
 	"github.com/birros/ddos-guard-bypass-proxy/pkg/response"
+	"github.com/birros/ddos-guard-bypass-proxy/pkg/worker"
 )
 
 type Client struct {
-	URL string
+	c *config
+}
+
+func NewClient(options ...Option) *Client {
+	c := parseOptions(options)
+
+	return &Client{
+		c: c,
+	}
 }
 
 func (c *Client) Do(req *http.Request) (*http.Response, error) {
+	if c.c.useSession {
+		req.Header.Add(worker.UseSessionHeader, "true")
+	}
+
 	reqDto, err := request.NewHTTPRequestDTO(req)
 	if err != nil {
 		return nil, err
@@ -29,7 +42,7 @@ func (c *Client) Do(req *http.Request) (*http.Response, error) {
 	reqProxy, err := http.NewRequestWithContext(
 		req.Context(),
 		"POST",
-		c.URL,
+		c.c.proxyUrl,
 		bytes.NewReader(reqData),
 	)
 	if err != nil {

@@ -13,6 +13,8 @@ import (
 	lru "github.com/hashicorp/golang-lru/v2"
 )
 
+const UseSessionHeader = "X-Use-Session"
+
 type payload struct {
 	Url        string
 	RequestDTO request.HTTPRequestDTO
@@ -25,6 +27,7 @@ type Worker struct {
 	ch      chan payload
 	c       *config
 	session *flaresolverr.Session
+	client  *flaresolverr.Client
 }
 
 func New(
@@ -38,7 +41,8 @@ func New(
 		pending: sync.Map{},
 		ch:      make(chan payload),
 		c:       c,
-		session: flaresolverr.New(c.flareSolverrUrl),
+		session: flaresolverr.NewSession(c.flareSolverrUrl),
+		client:  flaresolverr.NewClient(c.flareSolverrUrl),
 	}
 }
 
@@ -60,7 +64,6 @@ func (w *Worker) process(payload payload) {
 		w.pending.Delete(payload.Url)
 	}()
 
-	var res *http.Response
 	if payload.RequestDTO.Method != http.MethodGet {
 		log.Println(payload.Url, http.ErrNotSupported)
 		return
@@ -69,7 +72,15 @@ func (w *Worker) process(payload payload) {
 	ctx, cancel := context.WithTimeout(context.Background(), w.c.queryTimeout)
 	defer cancel()
 
-	res, err := w.session.Get(ctx, payload.RequestDTO.URL)
+	_, useSession := payload.RequestDTO.Header[UseSessionHeader]
+
+	var res *http.Response
+	var err error
+	if useSession {
+		res, err = w.session.Get(ctx, payload.RequestDTO.URL)
+	} else {
+		res, err = w.client.Get(ctx, payload.RequestDTO.URL)
+	}
 	if err != nil {
 		log.Println(payload.Url, err)
 		return

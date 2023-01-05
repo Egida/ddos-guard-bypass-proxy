@@ -47,8 +47,22 @@ type query struct {
 }
 
 type Client struct {
-	Url       string
-	SessionID string
+	url       string
+	sessionID string
+}
+
+func NewClient(url string) *Client {
+	return &Client{
+		url: url,
+	}
+}
+
+func (c *Client) SessionID() string {
+	return c.sessionID
+}
+
+func (c *Client) SetSessionID(sessionID string) {
+	c.sessionID = sessionID
 }
 
 func (c *Client) do(ctx context.Context, query query) (*http.Response, error) {
@@ -59,7 +73,7 @@ func (c *Client) do(ctx context.Context, query query) (*http.Response, error) {
 
 	body := bytes.NewReader(data)
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.Url, body)
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.url, body)
 	if err != nil {
 		return nil, err
 	}
@@ -117,7 +131,7 @@ func (c *Client) Get(ctx context.Context, url string) (*http.Response, error) {
 	query := query{
 		CMD:       formatCMD(get),
 		URL:       url,
-		SessionID: c.SessionID,
+		SessionID: c.sessionID,
 	}
 
 	res, err := c.do(ctx, query)
