@@ -12,7 +12,7 @@ import (
 	"strings"
 )
 
-var ErrFlareSolverrResponseNotOK = errors.New("FlareSolverr response not ok")
+var ErrFlareSolverr = errors.New("FlareSolverr error")
 
 type cmd = int
 
@@ -152,7 +152,7 @@ func parseListSessionsResponse(res *http.Response) ([]string, error) {
 	if payload.Status != "ok" {
 		err := fmt.Errorf(
 			"%w: %s",
-			ErrFlareSolverrResponseNotOK,
+			ErrFlareSolverr,
 			payload.Message,
 		)
 		return nil, err
@@ -187,7 +187,7 @@ func parseCreateSessionResponse(res *http.Response) (string, error) {
 	if payload.Status != "ok" {
 		err := fmt.Errorf(
 			"%w: %s",
-			ErrFlareSolverrResponseNotOK,
+			ErrFlareSolverr,
 			payload.Message,
 		)
 		return "", err
@@ -221,7 +221,7 @@ func parseDestroySessionResponse(res *http.Response) error {
 	if payload.Status != "ok" {
 		err := fmt.Errorf(
 			"%w: %s",
-			ErrFlareSolverrResponseNotOK,
+			ErrFlareSolverr,
 			payload.Message,
 		)
 		return err
@@ -261,7 +261,7 @@ func parseGetResponse(res *http.Response) (*http.Response, error) {
 	if payload.Status != "ok" {
 		err := fmt.Errorf(
 			"%w: %s",
-			ErrFlareSolverrResponseNotOK,
+			ErrFlareSolverr,
 			payload.Message,
 		)
 		return nil, err
